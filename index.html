@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A To Z Solution - Smart Print Kiosk</title>
-    <!-- Font Awesome & Scripts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
-    <!-- Cropper.js for Crop & Rotate -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     
@@ -58,7 +56,6 @@
     </header>
 
     <div class="container">
-        <!-- 1. Document Print -->
         <div class="card">
             <i class="fa-solid fa-file-pdf main-icon" style="color: var(--primary);"></i>
             <h2>Document Print</h2>
@@ -91,7 +88,6 @@
             <button id="doc-pay" class="btn-pay" disabled onclick="openPayment('DOCUMENT', document.getElementById('doc-total').innerText, document.getElementById('doc-copies').value, null, 'doc')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay & Print</button>
         </div>
 
-        <!-- 2. ID Card Print -->
         <div class="card" style="border-top-color: #F59E0B;">
             <i class="fa-solid fa-id-card main-icon" style="color: #F59E0B;"></i>
             <h2>ID Card Print</h2>
@@ -121,7 +117,6 @@
             <button id="id-pay" class="btn-pay" disabled onclick="openPayment('IDCARD', document.getElementById('id-total').innerText, document.getElementById('id-copies').value, null, 'id')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay ₹<span id="id-total">10</span> & Print</button>
         </div>
 
-        <!-- 3. Photo Print -->
         <div class="card" style="border-top-color: #EC4899;">
             <i class="fa-solid fa-image main-icon" style="color: #EC4899;"></i>
             <h2>Photo Print</h2>
@@ -148,7 +143,6 @@
         </div>
     </div>
 
-    <!-- Enhanced Footer -->
     <footer>
         <b>A To Z Solution</b><br>
         <div class="admission-banner">
@@ -161,7 +155,6 @@
         <span style="font-size: 12px; color: #9CA3AF;">&copy; 2026 Developed by Ankit Singh</span>
     </footer>
 
-    <!-- Crop & Rotate Modal -->
     <div id="crop-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0; color: var(--primary);">Adjust Image</h3>
@@ -177,15 +170,14 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
     <div id="payment-modal" class="modal-overlay">
         <div class="modal-content">
             <h2 style="color: var(--primary); margin-top:0;">Complete Payment</h2>
             <h1 style="font-size: 38px; margin: 5px 0 15px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
             
-            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QR Code" style="width: 150px; border-radius: 8px; margin-bottom: 10px;">
+            <img src="qr.jpeg" alt="A To Z Solution QR Code" style="width: 180px; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ccc;">
             
-            <a href="9709506515-2@ybl&pn=AToZSolution&cu=INR" class="btn-pay" style="background: #5C2D91; display: block; text-decoration: none; margin-bottom: 15px; width: 90%; margin-left: auto; margin-right: auto;">
+            <a href="upi://pay?pa=9709506515-2@ybl&pn=AToZSolution&cu=INR" class="btn-pay" style="background: #5C2D91; display: block; text-decoration: none; margin-bottom: 15px; width: 90%; margin-left: auto; margin-right: auto;">
                 <i class="fa-solid fa-mobile-screen"></i> Pay via UPI App
             </a>
             
@@ -197,7 +189,6 @@
         </div>
     </div>
 
-    <!-- Thank You Modal -->
     <div id="thankyou-modal" class="modal-overlay">
         <div class="thankyou-box">
             <i class="fa-solid fa-circle-check"></i>
@@ -338,7 +329,7 @@
 
         function calcIdTotal() {
             const copies = parseInt(document.getElementById('id-copies').value) || 1;
-            const rate = 10; // Fixed price for ID Card
+            const rate = 10; 
             
             document.getElementById('id-total').innerText = rate * copies;
         }
@@ -369,7 +360,7 @@
             const copies = parseInt(document.getElementById('photo-copies').value) || 1;
             let rate = 50; 
             
-            if(size === 'A4') rate = 120;
+            if(size === 'A4') rate = 50;
             if(size === '4Pass') rate = 30;
             if(size === '8Pass') rate = 50;
             
