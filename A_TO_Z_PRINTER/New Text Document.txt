@@ -1,0 +1,56 @@
+import time
+import requests
+import os
+import subprocess
+
+# आपका असली गूगल स्क्रिप्ट यूआरएल
+API_URL = "https://script.google.com/macros/s/AKfycbxWoAL9yvBcDOhcz2TzoVR2PyR7ayZ-2wFQPXWXtVuyepa_mp4Tj_7HSprOfhnbOYWE/exec"
+
+print("🖨️ A TO Z SOLUTION - Printer Server Started...")
+print("⏳ Waiting for new print orders...")
+
+printed_orders = set() # यह याद रखेगा कि कौन सा प्रिंट निकल चुका है
+
+while True:
+    try:
+        response = requests.get(API_URL)
+        orders = response.json()
+        
+        for order in orders:
+            order_id = order['orderId']
+            
+            # अगर यह फाइल पहले प्रिंट नहीं हुई है, तभी आगे बढ़ेगा
+            if order_id not in printed_orders:
+                file_url = order['fileUrl']
+                print(f"\n📥 New Order Found! Token/UTR: {order_id}. Downloading...")
+                
+                try:
+                    # Google Drive से फाइल डाउनलोड करना
+                    file_id = file_url.split('id=')[1]
+                    download_url = f"https://docs.google.com/uc?export=download&id={file_id}"
+                    
+                    file_name = f"print_{order_id}.pdf"
+                    file_path = os.path.join(os.getcwd(), file_name)
+                    
+                    file_response = requests.get(download_url)
+                    with open(file_path, 'wb') as f:
+                        f.write(file_response.content)
+                    
+                    # आपके डिफ़ॉल्ट प्रिंटर को कमांड भेजना
+                    print(f"🖨️ Sending {file_name} to printer...")
+                    os.startfile(file_path, "print")
+                    
+                    # प्रिंट होने के बाद इसे लिस्ट में डाल देगा ताकि दोबारा प्रिंट न हो
+                    printed_orders.add(order_id)
+                    print("✅ Print command sent successfully.")
+                    
+                    time.sleep(5) # मशीन को रिलैक्स करने के लिए 5 सेकंड रुकेगा
+                    
+                except Exception as e:
+                    print(f"⚠️ File reading error for {order_id}")
+                    
+    except Exception as e:
+        pass
+        
+    # हर 10 सेकंड में नई फाइल चेक करेगा
+    time.sleep(10)
