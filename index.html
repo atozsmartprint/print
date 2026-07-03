@@ -78,8 +78,8 @@
                 <p><b>Pages:</b> <span id="doc-pages">0</span></p>
                 <p><b>Type:</b> 
                     <select id="doc-color" onchange="calcDocTotal()" style="padding: 4px; font-weight: bold;">
-                        <option value="bw">B&W (₹5)</option>
-                        <option value="color">Color (₹10)</option>
+                        <option value="BW">B&W (₹5)</option>
+                        <option value="COLOR">Color (₹10)</option>
                     </select>
                 </p>
                 <div class="copies-box">
@@ -90,7 +90,8 @@
             </div>
 
             <p id="doc-msg" style="color: var(--primary); font-weight: bold; margin-top:10px;"></p>
-            <button id="doc-pay" class="btn-pay" disabled onclick="openPayment('DOCUMENT', document.getElementById('doc-total').innerText, document.getElementById('doc-copies').value, null, 'doc')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay & Print</button>
+            <!-- Dhyan dein: Yahan DOC_BW ya DOC_COLOR bhej raha hai -->
+            <button id="doc-pay" class="btn-pay" disabled onclick="openPayment('DOC_' + document.getElementById('doc-color').value.toUpperCase(), document.getElementById('doc-total').innerText, document.getElementById('doc-copies').value, null, 'doc')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay & Print</button>
         </div>
 
         <!-- 2. ID Card Print -->
@@ -338,7 +339,7 @@
             }
             
             const type = document.getElementById('doc-color').value;
-            const rate = (type === 'color') ? 10 : 5;
+            const rate = (type === 'COLOR') ? 10 : 5;
             const copies = parseInt(document.getElementById('doc-copies').value) || 1;
             
             const total = pages * rate * copies;
@@ -442,17 +443,14 @@
             executeOrder(utr);
         }
 
-        // Google Sheet verification flow (Cash Pay)
+        // Cash Flow Trigger
         function triggerCashFlow() {
-            // Generate Random 4-digit code for customer to tell shop owner
             const authCode = Math.floor(1000 + Math.random() * 9000).toString();
             
-            // Switch UI immediately to show code to user
             document.getElementById('modal-content-default').style.display = 'none';
             document.getElementById('display-auth-code').innerText = authCode;
             document.getElementById('modal-content-pending').style.display = 'block';
             
-            // Fire the API call silently in the background
             executeOrder("CASH_CODE_" + authCode);
         }
 
@@ -477,21 +475,24 @@
             }
         }
 
+        // THE FIX IS HERE
         function sendDataToServer(orderId, serviceType, fileName, fileData, utr) {
             let payMethodText = "";
             let isCash = utr.startsWith("CASH_CODE_");
+            let orderStatus = "Ready to print"; // UPI ke liye Default Ready
             
             if (isCash) {
-                // Creates exactly what shows in Google Sheet: "CASH (Code: 1234) - PENDING"
                 let code = utr.split("_")[2];
-                payMethodText = "CASH (Code: " + code + ") - PENDING";
+                payMethodText = "CASH (Code: " + code + ")";
+                orderStatus = "PENDING"; // Cash ke liye Sheet me PENDING
             } else {
                 payMethodText = "UPI (UTR: " + utr + ")";
             }
             
             const payload = {
                 orderId: orderId, serviceType: serviceType, amount: currentAmount,
-                payMethod: payMethodText, fileName: fileName, fileData: fileData
+                payMethod: payMethodText, fileName: fileName, fileData: fileData,
+                status: orderStatus 
             };
             
             const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWoAL9yvBcDOhcz2TzoVR2PyR7ayZ-2wFQPXWXtVuyepa_mp4Tj_7HSprOfhnbOYWE/exec";
@@ -499,8 +500,6 @@
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(() => { 
-                // Only show Thank You modal for Online payments. 
-                // For Cash, let them stare at the Auth Code Screen.
                 if (!isCash) {
                     document.getElementById('payment-modal').style.display = 'none';
                     document.getElementById('thankyou-modal').style.display = 'flex';
@@ -508,7 +507,6 @@
                 }
             })
             .catch(() => {
-                // Handled silently for cash since the user is already looking at the Code screen
                 if (!isCash) {
                     alert("⚠️ Error sending order.");
                     document.getElementById('btn-submit').innerText = "Submit UTR";
