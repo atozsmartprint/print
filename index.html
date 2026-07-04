@@ -98,6 +98,12 @@
             <i class="fa-solid fa-id-card main-icon" style="color: #F59E0B;"></i>
             <h2>ID Card Print</h2>
             
+            <!-- NAYA: ID Card me Color / B&W Dropdown -->
+            <select id="id-color" onchange="calcIdTotal()" style="width:100%; padding:8px; margin-bottom:10px; border-radius:6px; font-weight: bold;">
+                <option value="COLOR">Color Print (₹10)</option>
+                <option value="BW">B&W Print (₹5)</option>
+            </select>
+
             <select id="id-sides" onchange="handleIdFormatChange()" style="width:100%; padding:8px; margin-bottom:15px; border-radius:6px; font-weight: bold;">
                 <option value="2">2-Side Print (Aadhaar / Voter)</option>
                 <option value="1">1-Side Print Center (PAN Card)</option>
@@ -120,7 +126,7 @@
             </div>
             
             <p id="id-msg" style="color: var(--danger); font-weight: bold; margin-top:10px;">Upload required sides.</p>
-            <button id="id-pay" class="btn-pay" disabled onclick="openPayment('IDCARD', document.getElementById('id-total').innerText, document.getElementById('id-copies').value, null, 'id')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay ₹<span id="id-total">10</span> & Print</button>
+            <button id="id-pay" class="btn-pay" disabled onclick="openPayment('IDCARD_' + document.getElementById('id-color').value.toUpperCase(), document.getElementById('id-total').innerText, document.getElementById('id-copies').value, null, 'id')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay ₹<span id="id-total">10</span> & Print</button>
         </div>
 
         <!-- 3. Photo Print -->
@@ -179,29 +185,26 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
+    <!-- Payment Modal (QR Code Scanner Only) -->
     <div id="payment-modal" class="modal-overlay">
         <!-- Default Online Payment View -->
         <div class="modal-content" id="modal-content-default">
             <h2 style="color: var(--primary); margin-top:0;">Complete Payment</h2>
-            <h1 style="font-size: 38px; margin: 5px 0 15px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
+            <h1 style="font-size: 38px; margin: 5px 0 10px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
             
-            <img src="qr.jpeg" alt="A To Z Solution QR Code" style="width: 180px; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ccc;">
+            <p style="font-size: 15px; color: #1F2937; font-weight: bold; margin-bottom: 10px;">Scan QR to Pay securely</p>
             
-            <!-- SMART UPI LINK BUTTON WITH FORMATTED AMOUNT FIX AND NEW MERCHANT ID -->
-            <a id="upi-intent-btn" href="#" class="btn-pay" style="background: #5C2D91; display: block; text-decoration: none; margin-bottom: 15px; width: 90%; margin-left: auto; margin-right: auto;">
-                <i class="fa-solid fa-mobile-screen"></i> Pay via UPI App
-            </a>
+            <img src="qr.jpeg" alt="A To Z Solution QR Code" style="width: 220px; border-radius: 8px; margin-bottom: 15px; border: 3px solid #E5E7EB; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
             
-            <p style="font-size: 12px; color: var(--danger); margin:0;">Enter 12-Digit UTR for Online Pay:</p>
-            <input type="text" id="utr-input" placeholder="Enter 12-digit UTR" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 10px; margin: 5px 0 10px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
+            <p style="font-size: 12px; color: var(--danger); margin:0; font-weight: bold;">Enter 12-Digit UTR / Ref No. after payment:</p>
+            <input type="text" id="utr-input" placeholder="Enter 12-digit UTR here" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 12px; margin: 8px 0 15px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold; font-size: 16px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
             
             <div style="display: flex; gap: 10px; justify-content: center; width: 85%; margin: auto;">
-                <button class="btn-pay" onclick="processPayment()" id="btn-submit" style="flex: 1; margin-top: 0;">Submit UTR</button>
+                <button class="btn-pay" onclick="processPayment()" id="btn-submit" style="flex: 1; margin-top: 0; background: var(--success);">Verify & Print</button>
                 <button class="btn-cash" onclick="triggerCashFlow()" id="btn-cash" style="margin-top: 0;"><i class="fa-solid fa-money-bill-wave"></i> Pay Cash</button>
             </div>
 
-            <p style="margin-top: 15px; cursor: pointer; text-decoration: underline;" onclick="document.getElementById('payment-modal').style.display='none'">Cancel</p>
+            <p style="margin-top: 15px; cursor: pointer; text-decoration: underline; color: #6B7280;" onclick="document.getElementById('payment-modal').style.display='none'">Cancel Order</p>
         </div>
 
         <!-- Cash Pending View (Shows Random Code) -->
@@ -218,7 +221,7 @@
         </div>
     </div>
 
-    <!-- Thank You Modal (Only for UPI) -->
+    <!-- Thank You Modal -->
     <div id="thankyou-modal" class="modal-overlay">
         <div class="thankyou-box">
             <i class="fa-solid fa-circle-check"></i>
@@ -229,7 +232,6 @@
     </div>
 
     <script>
-        // Global State Variables
         let currentDocFile = null; 
         let currentService = ''; let currentAmount = 0; let currentCopies = 1; let activeFileType = '';
         
@@ -238,11 +240,9 @@
         let photoBase64 = null;
         let originalFileName = "File.jpg";
 
-        // Cropper Variables
         let cropper = null;
         let currentCropTarget = '';
 
-        // --- Cropper Logic ---
         function triggerCrop(input, target) {
             if(input.files && input.files[0]) {
                 const file = input.files[0];
@@ -295,7 +295,6 @@
             document.getElementById('crop-modal').style.display = 'none';
         }
 
-        // --- Document Logic ---
         function handleDocUpload(input) {
             const file = input.files[0];
             if(!file) return;
@@ -345,7 +344,6 @@
             document.getElementById('doc-total').innerText = total;
         }
 
-        // --- ID Card Logic ---
         function handleIdFormatChange() {
             const sides = document.getElementById('id-sides').value;
             if(sides === '1') {
@@ -359,9 +357,16 @@
 
         function calcIdTotal() {
             const copies = parseInt(document.getElementById('id-copies').value) || 1;
-            const rate = 10; 
             
-            document.getElementById('id-total').innerText = rate * copies;
+            // NAYA: ID ki price logic Color aur B&W ke hisab se
+            const type = document.getElementById('id-color').value;
+            const rate = (type === 'COLOR') ? 10 : 5; 
+            
+            const total = rate * copies;
+            document.getElementById('id-total').innerText = total;
+            
+            // Button ka text bhi automatic update hoga
+            document.getElementById('id-pay').innerHTML = `<i class="fa-solid fa-indian-rupee-sign"></i> Pay ₹${total} & Print`;
         }
 
         function checkIdReady() {
@@ -384,7 +389,6 @@
             }
         }
 
-        // --- Photo Logic ---
         function calcPhotoTotal() {
             const size = document.getElementById('photo-size').value;
             const copies = parseInt(document.getElementById('photo-copies').value) || 1;
@@ -397,7 +401,6 @@
             document.getElementById('photo-total').innerText = rate * copies;
         }
 
-        // --- Payment & Modal Flow ---
         function openPayment(service, amount, copies, fileObj, typeCode) {
             currentService = service; 
             currentAmount = amount; 
@@ -406,12 +409,6 @@
             
             document.getElementById('modal-amount').innerText = amount;
             
-            // 🔥 NAYI GPAY MERCHANT ID (1000209762.jpg se li gayi) 🔥
-            const finalAm = parseFloat(amount).toFixed(2);
-            const upiLink = "upi://pay?pa=gpay-12195836588@okbizaxis&pn=A%20TO%20Z%20SOLUTION&cu=INR&am=" + finalAm;
-            
-            document.getElementById('upi-intent-btn').href = upiLink;
-
             document.getElementById('modal-content-default').style.display = 'block';
             document.getElementById('modal-content-pending').style.display = 'none';
             document.getElementById('payment-modal').style.display = 'flex';
@@ -433,10 +430,9 @@
             sendDataToServer(orderId, finalService, "ID_Card_" + orderId + ".pdf", finalPdfData, utr);
         }
 
-        // Standard UPI Pay
         function processPayment() {
             const utr = document.getElementById('utr-input').value;
-            if(utr.length !== 12) return alert("Please enter exactly 12 digits for UTR!");
+            if(utr.length !== 12) return alert("Please enter exactly 12 digits for UTR / Reference No.!");
             
             document.getElementById('btn-submit').innerText = "Processing...";
             document.getElementById('btn-submit').disabled = true;
@@ -445,7 +441,6 @@
             executeOrder(utr);
         }
 
-        // Cash Flow Trigger
         function triggerCashFlow() {
             const authCode = Math.floor(1000 + Math.random() * 9000).toString();
             
@@ -477,16 +472,15 @@
             }
         }
 
-        // Send to App Script
         function sendDataToServer(orderId, serviceType, fileName, fileData, utr) {
             let payMethodText = "";
             let isCash = utr.startsWith("CASH_CODE_");
-            let orderStatus = "Ready to print"; // UPI ke liye Default Ready
+            let orderStatus = "Ready to print";
             
             if (isCash) {
                 let code = utr.split("_")[2];
                 payMethodText = "CASH (Code: " + code + ")";
-                orderStatus = "PENDING"; // Cash ke liye Sheet me PENDING
+                orderStatus = "PENDING";
             } else {
                 payMethodText = "UPI (UTR: " + utr + ")";
             }
@@ -511,7 +505,7 @@
             .catch(() => {
                 if (!isCash) {
                     alert("⚠️ Error sending order.");
-                    document.getElementById('btn-submit').innerText = "Submit UTR";
+                    document.getElementById('btn-submit').innerText = "Verify & Print";
                     document.getElementById('btn-submit').disabled = false;
                     document.getElementById('btn-cash').disabled = false;
                 }
