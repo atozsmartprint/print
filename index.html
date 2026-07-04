@@ -90,7 +90,6 @@
             </div>
 
             <p id="doc-msg" style="color: var(--primary); font-weight: bold; margin-top:10px;"></p>
-            <!-- Dhyan dein: Yahan DOC_BW ya DOC_COLOR bhej raha hai -->
             <button id="doc-pay" class="btn-pay" disabled onclick="openPayment('DOC_' + document.getElementById('doc-color').value.toUpperCase(), document.getElementById('doc-total').innerText, document.getElementById('doc-copies').value, null, 'doc')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay & Print</button>
         </div>
 
@@ -189,7 +188,7 @@
             
             <img src="qr.jpeg" alt="A To Z Solution QR Code" style="width: 180px; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ccc;">
             
-            <!-- SMART UPI LINK BUTTON -->
+            <!-- SMART UPI LINK BUTTON WITH FORMATTED AMOUNT FIX AND NEW MERCHANT ID -->
             <a id="upi-intent-btn" href="#" class="btn-pay" style="background: #5C2D91; display: block; text-decoration: none; margin-bottom: 15px; width: 90%; margin-left: auto; margin-right: auto;">
                 <i class="fa-solid fa-mobile-screen"></i> Pay via UPI App
             </a>
@@ -407,7 +406,10 @@
             
             document.getElementById('modal-amount').innerText = amount;
             
-            const upiLink = "upi://pay?pa=9709506515-2@ybl&pn=AToZSolution&mc=5499&cu=INR&am=" + amount;
+            // 🔥 NAYI GPAY MERCHANT ID (1000209762.jpg se li gayi) 🔥
+            const finalAm = parseFloat(amount).toFixed(2);
+            const upiLink = "upi://pay?pa=gpay-12195836588@okbizaxis&pn=A%20TO%20Z%20SOLUTION&cu=INR&am=" + finalAm;
+            
             document.getElementById('upi-intent-btn').href = upiLink;
 
             document.getElementById('modal-content-default').style.display = 'block';
@@ -475,7 +477,7 @@
             }
         }
 
-        // THE FIX IS HERE
+        // Send to App Script
         function sendDataToServer(orderId, serviceType, fileName, fileData, utr) {
             let payMethodText = "";
             let isCash = utr.startsWith("CASH_CODE_");
