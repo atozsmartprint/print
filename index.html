@@ -169,7 +169,7 @@
         <span style="font-size: 12px; color: #9CA3AF;">&copy; 2026 Developed by Ankit Singh</span>
     </footer>
 
-    <!-- Crop & Rotate Modal -->
+    <!-- Crop Modal -->
     <div id="crop-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0; color: var(--primary);">Adjust Image</h3>
@@ -185,16 +185,14 @@
         </div>
     </div>
 
-    <!-- Payment Modal (Strictly QR Code & UTR Scanner) -->
+    <!-- Payment Modal -->
     <div id="payment-modal" class="modal-overlay">
-        <!-- Default Online Payment View -->
         <div class="modal-content" id="modal-content-default">
             <h2 style="color: var(--primary); margin-top:0;">Complete Payment</h2>
             <h1 style="font-size: 38px; margin: 5px 0 10px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
             
             <p style="font-size: 15px; color: #1F2937; font-weight: bold; margin-bottom: 10px;">Scan QR to Pay securely</p>
             
-            <!-- Secure QR Code -->
             <img src="qr.jpeg" alt="A To Z Solution QR Code" style="width: 220px; border-radius: 8px; margin-bottom: 15px; border: 3px solid #E5E7EB; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
             
             <p style="font-size: 12px; color: var(--danger); margin:0; font-weight: bold;">Enter 12-Digit UTR / Ref No. after payment:</p>
@@ -208,16 +206,12 @@
             <p style="margin-top: 15px; cursor: pointer; text-decoration: underline; color: #6B7280;" onclick="document.getElementById('payment-modal').style.display='none'">Cancel Order</p>
         </div>
 
-        <!-- Cash Pending View -->
         <div class="modal-content" id="modal-content-pending" style="display:none;">
             <h2 style="color: #F59E0B; margin-top:0;"><i class="fa-solid fa-clock-rotate-left"></i> Order Pending</h2>
             <p style="font-size: 16px; margin-bottom: 5px;">Aapka Verification Code hai:</p>
-            
             <h1 style="font-size: 55px; letter-spacing: 8px; color: #1F2937; margin: 15px 0;" id="display-auth-code">0000</h1>
-            
             <p style="color: var(--danger); font-size: 14px; font-weight:bold;">Counter par Cash dekar ye Code batayein.</p>
             <p style="font-size: 13px; color: #6B7280; margin-top: 10px;">(Code confirm hone ke baad hi print niklega)</p>
-            
             <button class="btn-pay" onclick="location.reload()" style="background: var(--primary); width: 80%; margin-top: 20px;">Done / Go Back</button>
         </div>
     </div>
@@ -232,23 +226,11 @@
         </div>
     </div>
 
-    <!-- 100% Bug-Free Master JavaScript -->
     <script>
-        let currentDocFile = null; 
-        let currentService = ''; 
-        let currentAmount = 0; 
-        let currentCopies = 1; 
-        let activeFileType = '';
-        
-        let idFrontBase64 = null; 
-        let idBackBase64 = null;
-        let photoBase64 = null;
-        let originalFileName = "File.jpg";
+        let currentDocFile = null; let currentService = ''; let currentAmount = 0; let currentCopies = 1; let activeFileType = '';
+        let idFrontBase64 = null; let idBackBase64 = null; let photoBase64 = null; let originalFileName = "File.jpg";
+        let cropper = null; let currentCropTarget = '';
 
-        let cropper = null;
-        let currentCropTarget = '';
-
-        // 1. ROBUST CROPPER LOGIC (Race-condition fixed)
         function triggerCrop(input, target) {
             if(input.files && input.files[0]) {
                 const file = input.files[0];
@@ -258,68 +240,42 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imgElement = document.getElementById('crop-image');
-                    
+                    document.getElementById('crop-modal').style.display = 'flex';
                     if(cropper) { cropper.destroy(); cropper = null; }
                     
+                    imgElement.onload = function() {
+                        cropper = new Cropper(imgElement, { viewMode: 1, autoCropArea: 1 });
+                    };
                     imgElement.src = e.target.result;
-                    document.getElementById('crop-modal').style.display = 'flex';
-                    
-                    // Delay applied to ensure modal renders before cropper init
-                    setTimeout(() => {
-                        cropper = new Cropper(imgElement, {
-                            aspectRatio: NaN,
-                            viewMode: 1,
-                            autoCropArea: 1,
-                        });
-                    }, 200);
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function rotateImg(degree) {
-            if(cropper) { cropper.rotate(degree); }
-        }
+        function rotateImg(degree) { if(cropper) cropper.rotate(degree); }
 
         function saveCrop() {
-            if(!cropper) return;
-            
-            const canvas = cropper.getCroppedCanvas({
-                imageSmoothingEnabled: true,
-                imageSmoothingQuality: 'high',
-            });
-            
-            // Safety check to prevent saving errors
-            if(!canvas) {
-                alert("⚠️ Image theek se process nahi hui. Kripya dobara photo upload karein.");
+            if(!cropper) { alert("⚠️ Please wait, photo load ho rahi hai..."); return; }
+            try {
+                const canvas = cropper.getCroppedCanvas({ maxWidth: 1500, maxHeight: 1500, imageSmoothingEnabled: true, imageSmoothingQuality: 'medium' });
+                if(!canvas) { alert("⚠️ Error: Photo process nahi hui!"); return; }
+
+                const base64Data = canvas.toDataURL('image/jpeg', 0.8);
+                if(currentCropTarget === 'idFront') { idFrontBase64 = base64Data; checkIdReady(); } 
+                else if (currentCropTarget === 'idBack') { idBackBase64 = base64Data; checkIdReady(); } 
+                else if (currentCropTarget === 'photo') { photoBase64 = base64Data; document.getElementById('photo-msg').innerText = "Cropped & Ready ✅"; calcPhotoTotal(); document.getElementById('photo-pay').disabled = false; }
+                
                 document.getElementById('crop-modal').style.display = 'none';
-                return;
+            } catch (error) {
+                alert("⚠️ System Error in Cropping: " + error.message);
+                document.getElementById('crop-modal').style.display = 'none';
             }
-
-            const base64Data = canvas.toDataURL('image/jpeg', 0.9);
-
-            if(currentCropTarget === 'idFront') {
-                idFrontBase64 = base64Data;
-                checkIdReady();
-            } else if (currentCropTarget === 'idBack') {
-                idBackBase64 = base64Data;
-                checkIdReady();
-            } else if (currentCropTarget === 'photo') {
-                photoBase64 = base64Data;
-                document.getElementById('photo-msg').innerText = "Cropped & Ready ✅";
-                calcPhotoTotal();
-                document.getElementById('photo-pay').disabled = false;
-            }
-            
-            document.getElementById('crop-modal').style.display = 'none';
         }
 
-        // 2. DOCUMENT LOGIC
         function handleDocUpload(input) {
             const file = input.files[0];
             if(!file) return;
-            currentDocFile = file;
-            originalFileName = file.name;
+            currentDocFile = file; originalFileName = file.name;
             
             document.getElementById('doc-preview').style.display = 'block';
             document.getElementById('doc-pay').disabled = true;
@@ -328,22 +284,17 @@
             if(file.name.toLowerCase().endsWith('.pdf')) {
                 document.getElementById('word-page-input-box').style.display = 'none';
                 msg.innerText = "Scanning PDF Pages...";
-                
                 const fileReader = new FileReader();
                 fileReader.onload = function() {
                     pdfjsLib.getDocument(new Uint8Array(this.result)).promise.then(pdf => {
                         document.getElementById('doc-pages').innerText = pdf.numPages;
-                        calcDocTotal(); 
-                        msg.innerText = "PDF Ready ✅";
-                        document.getElementById('doc-pay').disabled = false;
+                        calcDocTotal(); msg.innerText = "PDF Ready ✅"; document.getElementById('doc-pay').disabled = false;
                     });
                 };
                 fileReader.readAsArrayBuffer(file);
             } else {
                 document.getElementById('word-page-input-box').style.display = 'block';
-                calcDocTotal();
-                msg.innerText = "Word File Ready ✅";
-                document.getElementById('doc-pay').disabled = false;
+                calcDocTotal(); msg.innerText = "Word File Ready ✅"; document.getElementById('doc-pay').disabled = false;
             }
         }
 
@@ -352,36 +303,24 @@
             if(document.getElementById('word-page-input-box').style.display !== 'none') {
                 pages = parseInt(document.getElementById('word-pages').value) || 1;
                 document.getElementById('doc-pages').innerText = pages;
-            } else {
-                pages = parseInt(document.getElementById('doc-pages').innerText) || 1;
-            }
-            
+            } else { pages = parseInt(document.getElementById('doc-pages').innerText) || 1; }
             const type = document.getElementById('doc-color').value;
             const rate = (type === 'COLOR') ? 10 : 5;
             const copies = parseInt(document.getElementById('doc-copies').value) || 1;
-            
-            const total = pages * rate * copies;
-            document.getElementById('doc-total').innerText = total;
+            document.getElementById('doc-total').innerText = pages * rate * copies;
         }
 
-        // 3. ID CARD LOGIC
         function handleIdFormatChange() {
             const sides = document.getElementById('id-sides').value;
-            if(sides === '1') {
-                document.getElementById('back-side-upload').style.display = 'none';
-                idBackBase64 = null; 
-            } else {
-                document.getElementById('back-side-upload').style.display = 'block';
-            }
+            if(sides === '1') { document.getElementById('back-side-upload').style.display = 'none'; idBackBase64 = null; } 
+            else { document.getElementById('back-side-upload').style.display = 'block'; }
             checkIdReady();
         }
 
         function calcIdTotal() {
             const copies = parseInt(document.getElementById('id-copies').value) || 1;
             const type = document.getElementById('id-color').value;
-            const rate = (type === 'COLOR') ? 10 : 5; 
-            
-            const total = rate * copies;
+            const total = ((type === 'COLOR') ? 10 : 5) * copies;
             document.getElementById('id-total').innerText = total;
             document.getElementById('id-pay').innerHTML = `<i class="fa-solid fa-indian-rupee-sign"></i> Pay ₹${total} & Print`;
         }
@@ -390,131 +329,67 @@
             calcIdTotal();
             const sides = document.getElementById('id-sides').value;
             const msg = document.getElementById('id-msg');
-            
-            if(sides === '1' && idFrontBase64) {
-                msg.innerText = "PAN Card Ready ✅";
-                msg.style.color = "var(--success)";
-                document.getElementById('id-pay').disabled = false;
-            } else if(sides === '2' && idFrontBase64 && idBackBase64) {
-                msg.innerText = "Front & Back Ready ✅";
-                msg.style.color = "var(--success)";
-                document.getElementById('id-pay').disabled = false;
-            } else {
-                msg.innerText = "Upload required sides.";
-                msg.style.color = "var(--danger)";
-                document.getElementById('id-pay').disabled = true;
-            }
+            if(sides === '1' && idFrontBase64) { msg.innerText = "PAN Card Ready ✅"; msg.style.color = "var(--success)"; document.getElementById('id-pay').disabled = false; } 
+            else if(sides === '2' && idFrontBase64 && idBackBase64) { msg.innerText = "Front & Back Ready ✅"; msg.style.color = "var(--success)"; document.getElementById('id-pay').disabled = false; } 
+            else { msg.innerText = "Upload required sides."; msg.style.color = "var(--danger)"; document.getElementById('id-pay').disabled = true; }
         }
 
-        // 4. PHOTO LOGIC
         function calcPhotoTotal() {
             const size = document.getElementById('photo-size').value;
             const copies = parseInt(document.getElementById('photo-copies').value) || 1;
-            let rate = 50; 
-            
-            if(size === 'A4') rate = 50;
-            if(size === '4Pass') rate = 30;
-            if(size === '8Pass') rate = 50;
-            
+            let rate = (size === '4Pass') ? 30 : 50;
             document.getElementById('photo-total').innerText = rate * copies;
         }
 
-        // 5. PAYMENT & PROCESSING LOGIC
         function openPayment(service, amount, copies, fileObj, typeCode) {
-            currentService = service; 
-            currentAmount = amount; 
-            currentCopies = copies;
-            activeFileType = typeCode; 
-            
+            currentService = service; currentAmount = amount; currentCopies = copies; activeFileType = typeCode; 
             document.getElementById('modal-amount').innerText = amount;
-            
             document.getElementById('modal-content-default').style.display = 'block';
             document.getElementById('modal-content-pending').style.display = 'none';
             document.getElementById('payment-modal').style.display = 'flex';
-            
-            // Input field reset
             document.getElementById('utr-input').value = "";
         }
 
         function generateIDPdf(frontBase64, backBase64, finalService, orderId, utr) {
-            window.jsPDF = window.jspdf.jsPDF;
-            const doc = new jsPDF(); 
-            const sides = document.getElementById('id-sides').value;
-            
-            if(sides === '1') {
-                doc.addImage(frontBase64, 'JPEG', 62.5, 20, 85, 54);
-            } else {
-                doc.addImage(frontBase64, 'JPEG', 20, 20, 85, 54); 
-                doc.addImage(backBase64, 'JPEG', 110, 20, 85, 54); 
-            }
-            
-            const finalPdfData = doc.output('datauristring');
-            sendDataToServer(orderId, finalService, "ID_Card_" + orderId + ".pdf", finalPdfData, utr);
+            window.jsPDF = window.jspdf.jsPDF; const doc = new jsPDF(); const sides = document.getElementById('id-sides').value;
+            if(sides === '1') { doc.addImage(frontBase64, 'JPEG', 62.5, 20, 85, 54); } 
+            else { doc.addImage(frontBase64, 'JPEG', 20, 20, 85, 54); doc.addImage(backBase64, 'JPEG', 110, 20, 85, 54); }
+            sendDataToServer(orderId, finalService, "ID_Card_" + orderId + ".pdf", doc.output('datauristring'), utr);
         }
 
         function processPayment() {
             const utr = document.getElementById('utr-input').value;
-            if(utr.length !== 12) {
-                return alert("⚠️ Please enter exactly 12 digits for UTR / Reference No.!");
-            }
-            
+            if(utr.length !== 12) return alert("⚠️ Please enter exactly 12 digits for UTR / Reference No.!");
             document.getElementById('btn-submit').innerText = "Processing...";
-            document.getElementById('btn-submit').disabled = true;
-            document.getElementById('btn-cash').disabled = true;
-            
+            document.getElementById('btn-submit').disabled = true; document.getElementById('btn-cash').disabled = true;
             executeOrder(utr);
         }
 
         function triggerCashFlow() {
             const authCode = Math.floor(1000 + Math.random() * 9000).toString();
-            
             document.getElementById('modal-content-default').style.display = 'none';
             document.getElementById('display-auth-code').innerText = authCode;
             document.getElementById('modal-content-pending').style.display = 'block';
-            
             executeOrder("CASH_CODE_" + authCode);
         }
 
         function executeOrder(utr) {
             const orderId = Math.floor(100000 + Math.random() * 900000);
-
-            if(activeFileType === 'id') {
-                const finalService = currentService + "_X" + currentCopies; 
-                generateIDPdf(idFrontBase64, idBackBase64, finalService, orderId, utr);
-                
-            } else if (activeFileType === 'photo') {
-                const serviceWithCopies = currentService + "_X" + currentCopies;
-                sendDataToServer(orderId, serviceWithCopies, "Photo_" + originalFileName, photoBase64, utr);
-                
-            } else if (activeFileType === 'doc') {
-                const serviceWithCopies = currentService + "_X" + currentCopies;
+            if(activeFileType === 'id') { generateIDPdf(idFrontBase64, idBackBase64, currentService + "_X" + currentCopies, orderId, utr); } 
+            else if (activeFileType === 'photo') { sendDataToServer(orderId, currentService + "_X" + currentCopies, "Photo_" + originalFileName, photoBase64, utr); } 
+            else if (activeFileType === 'doc') {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    sendDataToServer(orderId, serviceWithCopies, originalFileName, e.target.result, utr);
-                }
+                reader.onload = function(e) { sendDataToServer(orderId, currentService + "_X" + currentCopies, originalFileName, e.target.result, utr); }
                 reader.readAsDataURL(currentDocFile);
             }
         }
 
         function sendDataToServer(orderId, serviceType, fileName, fileData, utr) {
-            let payMethodText = "";
             let isCash = utr.startsWith("CASH_CODE_");
-            let orderStatus = "Ready to print";
+            let payMethodText = isCash ? "CASH (Code: " + utr.split("_")[2] + ")" : "UPI (UTR: " + utr + ")";
+            let orderStatus = isCash ? "PENDING" : "Ready to print";
             
-            if (isCash) {
-                let code = utr.split("_")[2];
-                payMethodText = "CASH (Code: " + code + ")";
-                orderStatus = "PENDING";
-            } else {
-                payMethodText = "UPI (UTR: " + utr + ")";
-            }
-            
-            const payload = {
-                orderId: orderId, serviceType: serviceType, amount: currentAmount,
-                payMethod: payMethodText, fileName: fileName, fileData: fileData,
-                status: orderStatus 
-            };
-            
+            const payload = { orderId: orderId, serviceType: serviceType, amount: currentAmount, payMethod: payMethodText, fileName: fileName, fileData: fileData, status: orderStatus };
             const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWoAL9yvBcDOhcz2TzoVR2PyR7ayZ-2wFQPXWXtVuyepa_mp4Tj_7HSprOfhnbOYWE/exec";
             
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
@@ -525,13 +400,11 @@
                     document.getElementById('thankyou-modal').style.display = 'flex';
                     setTimeout(() => { location.reload(); }, 4000); 
                 }
-            })
-            .catch(() => {
+            }).catch(() => {
                 if (!isCash) {
                     alert("⚠️ Error sending order. Please check internet connection.");
                     document.getElementById('btn-submit').innerText = "Verify & Print";
-                    document.getElementById('btn-submit').disabled = false;
-                    document.getElementById('btn-cash').disabled = false;
+                    document.getElementById('btn-submit').disabled = false; document.getElementById('btn-cash').disabled = false;
                 }
             });
         }
