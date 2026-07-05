@@ -190,14 +190,20 @@
         <div class="modal-content" id="modal-content-default">
             <h2 style="color: var(--primary); margin-top:0;">Complete Payment</h2>
             <h1 style="font-size: 38px; margin: 5px 0 10px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
+            
             <p style="font-size: 15px; color: #1F2937; font-weight: bold; margin-bottom: 10px;">Scan QR to Pay securely</p>
-            <img src="qr.jpg" alt="A To Z Solution QR Code" style="width: 220px; border-radius: 8px; margin-bottom: 15px; border: 3px solid #E5E7EB; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <img src="qr.jpeg" alt="A To Z Solution QR Code" style="width: 220px; border-radius: 8px; margin-bottom: 15px; border: 3px solid #E5E7EB; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            
             <p style="font-size: 12px; color: var(--danger); margin:0; font-weight: bold;">Enter 12-Digit UTR / Ref No. after payment:</p>
-            <input type="text" id="utr-input" placeholder="Enter 12-digit UTR here" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 12px; margin: 8px 0 15px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold; font-size: 16px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
+            
+            <!-- 🔥 AUTOCOMPLETE="OFF" FIX YAHAN LAGA HAI 🔥 -->
+            <input type="text" id="utr-input" name="secure_utr_input" autocomplete="off" placeholder="Enter 12-digit UTR here" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 12px; margin: 8px 0 15px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold; font-size: 16px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
+            
             <div style="display: flex; gap: 10px; justify-content: center; width: 85%; margin: auto;">
                 <button class="btn-pay" onclick="processPayment()" id="btn-submit" style="flex: 1; margin-top: 0; background: var(--success);">Verify & Print</button>
                 <button class="btn-cash" onclick="triggerCashFlow()" id="btn-cash" style="margin-top: 0;"><i class="fa-solid fa-money-bill-wave"></i> Pay Cash</button>
             </div>
+
             <p style="margin-top: 15px; cursor: pointer; text-decoration: underline; color: #6B7280;" onclick="document.getElementById('payment-modal').style.display='none'">Cancel Order</p>
         </div>
 
@@ -352,11 +358,25 @@
             sendDataToServer(orderId, finalService, "ID_Card_" + orderId + ".pdf", doc.output('datauristring'), utr);
         }
 
+        // 🔥 SMART FRAUD DETECTOR WALA NAYA FUNCTION 🔥
         function processPayment() {
             const utr = document.getElementById('utr-input').value;
-            if(utr.length !== 12) return alert("⚠️ Please enter exactly 12 digits for UTR / Reference No.!");
+            
+            if(utr.length !== 12) {
+                return alert("⚠️ Please enter exactly 12 digits for UTR / Reference No.!");
+            }
+
+            const currentYearDigit = new Date().getFullYear().toString().slice(-1);
+            if (utr.charAt(0) !== currentYearDigit) {
+                return alert(`🚨 FRAUD ALERT: Invalid UTR Format! Is saal ke sabhi UTR '${currentYearDigit}' se shuru hote hain. Sahi UTR dalein!`);
+            }
+            if (/^(\d)\1{11}$/.test(utr) || utr.includes("1234567890")) {
+                return alert("🚨 FRAUD ALERT: Fake number detected! Kripya bank dwara diya gaya sahi UTR dalein.");
+            }
+
             document.getElementById('btn-submit').innerText = "Processing...";
             document.getElementById('btn-submit').disabled = true; document.getElementById('btn-cash').disabled = true;
+            
             executeOrder(utr);
         }
 
@@ -390,7 +410,7 @@
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(res => res.json())
             .then((responseData) => { 
-                // 🔥 FRAUD CHECK ALERT 🔥
+                // 🔥 DUPLICATE UTR SHEET SE CHECK HONE KE BAAD KA ALERT 🔥
                 if (responseData.error === "DUPLICATE_UTR") {
                     alert("🚨 FRAUD ALERT: Ye UTR number pehle hi istemaal ho chuka hai! Kripya naya payment karein ya sahi UTR dalein.");
                     document.getElementById('btn-submit').innerText = "Verify & Print";
