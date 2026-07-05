@@ -5,12 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A To Z Solution - Smart Print Kiosk</title>
     
-    <!-- Font Awesome & Scripts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- Cropper.js for Crop & Rotate -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     
@@ -31,21 +28,15 @@
         .btn-pay:disabled { background: #94A3B8; cursor: not-allowed; }
         .btn-cash { background: #F59E0B; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; flex: 1; transition: 0.3s; }
         
-        /* Modals */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 20px; border-radius: 12px; width: 95%; max-width: 500px; text-align: center; max-height: 90vh; overflow-y: auto; }
-        
-        /* Thank You Modal */
         .thankyou-box { background: var(--success); color: white; padding: 40px 20px; border-radius: 12px; width: 95%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .thankyou-box i { font-size: 60px; margin-bottom: 15px; animation: bounce 1s infinite; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-        /* Crop Modal Specific */
         .crop-container { max-height: 50vh; overflow: hidden; margin-bottom: 15px; background: #eee; border-radius: 8px; }
         .crop-container img { max-width: 100%; display: block; }
         .crop-tools button { background: #1F2937; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; margin: 0 5px; }
         
-        /* Footer & Others */
         footer { background: #1F2937; color: #D1D5DB; text-align: center; padding: 20px 0; margin-top: auto; }
         .admission-banner { background: linear-gradient(90deg, #F59E0B, #EF4444); color: white; padding: 10px; margin: 15px auto; width: 90%; max-width: 800px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border: 2px dashed #FFF; }
         .institute-text { font-size: 14px; color: #E5E7EB; margin-bottom: 10px; font-weight: 500; }
@@ -61,7 +52,7 @@
     </header>
 
     <div class="container">
-        <!-- 1. Document Print -->
+        <!-- Document Print -->
         <div class="card">
             <i class="fa-solid fa-file-pdf main-icon" style="color: var(--primary);"></i>
             <h2>Document Print</h2>
@@ -94,7 +85,7 @@
             <button id="doc-pay" class="btn-pay" disabled onclick="openPayment('DOC_' + document.getElementById('doc-color').value.toUpperCase(), document.getElementById('doc-total').innerText, document.getElementById('doc-copies').value, null, 'doc')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay & Print</button>
         </div>
 
-        <!-- 2. ID Card Print -->
+        <!-- ID Card Print -->
         <div class="card" style="border-top-color: #F59E0B;">
             <i class="fa-solid fa-id-card main-icon" style="color: #F59E0B;"></i>
             <h2>ID Card Print</h2>
@@ -129,7 +120,7 @@
             <button id="id-pay" class="btn-pay" disabled onclick="openPayment('IDCARD_' + document.getElementById('id-color').value.toUpperCase(), document.getElementById('id-total').innerText, document.getElementById('id-copies').value, null, 'id')"><i class="fa-solid fa-indian-rupee-sign"></i> Pay ₹<span id="id-total">10</span> & Print</button>
         </div>
 
-        <!-- 3. Photo Print -->
+        <!-- Photo Print -->
         <div class="card" style="border-top-color: #EC4899;">
             <i class="fa-solid fa-image main-icon" style="color: #EC4899;"></i>
             <h2>Photo Print</h2>
@@ -190,19 +181,14 @@
         <div class="modal-content" id="modal-content-default">
             <h2 style="color: var(--primary); margin-top:0;">Complete Payment</h2>
             <h1 style="font-size: 38px; margin: 5px 0 10px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
-            
             <p style="font-size: 15px; color: #1F2937; font-weight: bold; margin-bottom: 10px;">Scan QR to Pay securely</p>
-            
             <img src="qr.jpeg" alt="A To Z Solution QR Code" style="width: 220px; border-radius: 8px; margin-bottom: 15px; border: 3px solid #E5E7EB; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-            
             <p style="font-size: 12px; color: var(--danger); margin:0; font-weight: bold;">Enter 12-Digit UTR / Ref No. after payment:</p>
             <input type="text" id="utr-input" placeholder="Enter 12-digit UTR here" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 12px; margin: 8px 0 15px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold; font-size: 16px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
-            
             <div style="display: flex; gap: 10px; justify-content: center; width: 85%; margin: auto;">
                 <button class="btn-pay" onclick="processPayment()" id="btn-submit" style="flex: 1; margin-top: 0; background: var(--success);">Verify & Print</button>
                 <button class="btn-cash" onclick="triggerCashFlow()" id="btn-cash" style="margin-top: 0;"><i class="fa-solid fa-money-bill-wave"></i> Pay Cash</button>
             </div>
-
             <p style="margin-top: 15px; cursor: pointer; text-decoration: underline; color: #6B7280;" onclick="document.getElementById('payment-modal').style.display='none'">Cancel Order</p>
         </div>
 
@@ -317,12 +303,13 @@
             checkIdReady();
         }
 
+        // 🔥 THE FIX: Yahan 'id-total' span destroy nahi hoga
         function calcIdTotal() {
             const copies = parseInt(document.getElementById('id-copies').value) || 1;
             const type = document.getElementById('id-color').value;
             const total = ((type === 'COLOR') ? 10 : 5) * copies;
-            document.getElementById('id-total').innerText = total;
-            document.getElementById('id-pay').innerHTML = `<i class="fa-solid fa-indian-rupee-sign"></i> Pay ₹${total} & Print`;
+            const spanEl = document.getElementById('id-total');
+            if(spanEl) { spanEl.innerText = total; }
         }
 
         function checkIdReady() {
@@ -387,7 +374,7 @@
         function sendDataToServer(orderId, serviceType, fileName, fileData, utr) {
             let isCash = utr.startsWith("CASH_CODE_");
             let payMethodText = isCash ? "CASH (Code: " + utr.split("_")[2] + ")" : "UPI (UTR: " + utr + ")";
-            let orderStatus = isCash ? "PENDING" : "Ready to print";
+            let orderStatus = isCash ? "PENDING" : "Ready to print"; // NOTE: Case Sensitive!
             
             const payload = { orderId: orderId, serviceType: serviceType, amount: currentAmount, payMethod: payMethodText, fileName: fileName, fileData: fileData, status: orderStatus };
             const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWoAL9yvBcDOhcz2TzoVR2PyR7ayZ-2wFQPXWXtVuyepa_mp4Tj_7HSprOfhnbOYWE/exec";
