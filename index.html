@@ -186,28 +186,48 @@
     </div>
 
     <!-- Payment Modal -->
-<div id="payment-modal" class="modal-overlay">
-    <div class="modal-content" id="modal-content-default">
-        <h2 style="color: var(--primary); margin-top:0;">Complete Payment</h2>
-        <h1 style="font-size: 38px; margin: 5px 0 10px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
-        
-        <p style="font-size: 15px; color: #1F2937; font-weight: bold; margin-bottom: 10px;">Scan QR to Pay securely</p>
-        
-        <!-- Yahan qr.jpg check karo, extension sahi hai -->
-        <img src="qr.jpg" alt="A To Z Solution QR Code" style="width: 220px; border-radius: 8px; margin-bottom: 15px; border: 3px solid #E5E7EB; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-        
-        <p style="font-size: 12px; color: var(--danger); margin:0; font-weight: bold;">Enter 12-Digit UTR / Ref No. after payment:</p>
-        
-        <input type="text" id="utr-input" name="secure_utr_input" autocomplete="off" placeholder="Enter 12-digit UTR here" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 12px; margin: 8px 0 15px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold; font-size: 16px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
-        
-        <div style="display: flex; gap: 10px; justify-content: center; width: 85%; margin: auto;">
-            <button class="btn-pay" onclick="processPayment()" id="btn-submit" style="flex: 1; margin-top: 0; background: var(--success);">Verify & Print</button>
-            <button class="btn-cash" onclick="triggerCashFlow()" id="btn-cash" style="margin-top: 0;"><i class="fa-solid fa-money-bill-wave"></i> Pay Cash</button>
-        </div>
+    <div id="payment-modal" class="modal-overlay">
+        <div class="modal-content" id="modal-content-default">
+            <h2 style="color: var(--primary); margin-top:0;">Complete Payment</h2>
+            <h1 style="font-size: 38px; margin: 5px 0 10px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
+            
+            <p style="font-size: 14px; color: #1F2937; font-weight: bold; margin-bottom: 8px;">1. सीधे अपने ऐप से पेमेंट करें:</p>
+            
+            <!-- 🔥 100% WORKING DIRECT APP BUTTONS 🔥 -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 90%; margin: auto; margin-bottom: 12px;">
+                <a id="btn-gpay" href="#" class="btn-pay" style="background: #1F80E0; margin:0; padding: 10px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <i class="fa-brands fa-google-pay" style="font-size: 22px;"></i> GPay
+                </a>
+                <a id="btn-phonepe" href="#" class="btn-pay" style="background: #5F259F; margin:0; padding: 10px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <i class="fa-solid fa-mobile-screen-button"></i> PhonePe
+                </a>
+                <a id="btn-paytm" href="#" class="btn-pay" style="background: #00B9F1; margin:0; padding: 10px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <i class="fa-solid fa-wallet"></i> Paytm
+                </a>
+                <a id="btn-anyupi" href="#" class="btn-pay" style="background: #10B981; margin:0; padding: 10px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <i class="fa-solid fa-qrcode"></i> Any UPI
+                </a>
+            </div>
 
-        <p style="margin-top: 15px; cursor: pointer; text-decoration: underline; color: #6B7280;" onclick="document.getElementById('payment-modal').style.display='none'">Cancel Order</p>
-    </div>
-...
+            <p style="font-size: 13px; color: #6B7280; margin: 5px 0;">या दुकान का QR स्कैन करें:</p>
+            <img src="qr.jpg" alt="A To Z Solution QR Code" style="width: 150px; border-radius: 8px; margin-bottom: 10px; border: 2px solid #E5E7EB;">
+            
+            <div style="background: #FEF2F2; padding: 8px; border-radius: 6px; border: 1px dashed var(--danger); width: 85%; margin: auto; margin-bottom: 10px;">
+                <p style="font-size: 12px; color: var(--danger); margin:0; font-weight: bold;">
+                    ⚠️ पेमेंट के बाद वापस इसी पेज पर आकर 12-Digit UTR ज़रूर डालें:
+                </p>
+            </div>
+            
+            <!-- AUTOCOMPLETE="OFF" LAGA HUA HAI -->
+            <input type="text" id="utr-input" name="secure_utr_input" autocomplete="off" placeholder="Enter 12-digit UTR here" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 12px; margin: 0 0 15px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold; font-size: 16px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
+            
+            <div style="display: flex; gap: 10px; justify-content: center; width: 85%; margin: auto;">
+                <button class="btn-pay" onclick="processPayment()" id="btn-submit" style="flex: 1; margin-top: 0; background: var(--success);">Verify & Print</button>
+                <button class="btn-cash" onclick="triggerCashFlow()" id="btn-cash" style="margin-top: 0;"><i class="fa-solid fa-money-bill-wave"></i> Pay Cash</button>
+            </div>
+
+            <p style="margin-top: 15px; cursor: pointer; text-decoration: underline; color: #6B7280;" onclick="document.getElementById('payment-modal').style.display='none'">Cancel Order</p>
+        </div>
 
         <div class="modal-content" id="modal-content-pending" style="display:none;">
             <h2 style="color: #F59E0B; margin-top:0;"><i class="fa-solid fa-clock-rotate-left"></i> Order Pending</h2>
@@ -344,9 +364,29 @@
             document.getElementById('photo-total').innerText = rate * copies;
         }
 
+        // 🔥 100% WORKING OPEN PAYMENT FUNCTION 🔥
         function openPayment(service, amount, copies, fileObj, typeCode) {
             currentService = service; currentAmount = amount; currentCopies = copies; activeFileType = typeCode; 
             document.getElementById('modal-amount').innerText = amount;
+            
+            // App payment ke liye URI-encoded links
+            const upiId = "9709506515@okbizaxis"; 
+            const shopName = encodeURIComponent("A TO Z SOLUTION");
+            
+            // 1. Universal UPI Link
+            const universalLink = `upi://pay?pa=${upiId}&pn=${shopName}&am=${amount}&cu=INR`;
+            
+            // 2. Direct App Specific Links
+            const gpayLink = `gpay://upi/pay?pa=${upiId}&pn=${shopName}&am=${amount}&cu=INR`;
+            const phonepeLink = `phonepe://pay?pa=${upiId}&pn=${shopName}&am=${amount}&cu=INR`;
+            const paytmLink = `paytmmp://pay?pa=${upiId}&pn=${shopName}&am=${amount}&cu=INR`;
+            
+            // Links ko buttons se connect karna bina kisi alert ke
+            document.getElementById('btn-anyupi').href = universalLink;
+            document.getElementById('btn-gpay').href = gpayLink;
+            document.getElementById('btn-phonepe').href = phonepeLink;
+            document.getElementById('btn-paytm').href = paytmLink;
+
             document.getElementById('modal-content-default').style.display = 'block';
             document.getElementById('modal-content-pending').style.display = 'none';
             document.getElementById('payment-modal').style.display = 'flex';
@@ -360,7 +400,7 @@
             sendDataToServer(orderId, finalService, "ID_Card_" + orderId + ".pdf", doc.output('datauristring'), utr);
         }
 
-        // 🔥 SMART FRAUD DETECTOR WALA NAYA FUNCTION 🔥
+        // 🔥 SMART FRAUD DETECTOR WALA FUNCTION 🔥
         function processPayment() {
             const utr = document.getElementById('utr-input').value;
             
@@ -412,7 +452,7 @@
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(res => res.json())
             .then((responseData) => { 
-                // 🔥 DUPLICATE UTR SHEET SE CHECK HONE KE BAAD KA ALERT 🔥
+                // 🔥 DUPLICATE UTR ALERT 🔥
                 if (responseData.error === "DUPLICATE_UTR") {
                     alert("🚨 FRAUD ALERT: Ye UTR number pehle hi istemaal ho chuka hai! Kripya naya payment karein ya sahi UTR dalein.");
                     document.getElementById('btn-submit').innerText = "Verify & Print";
