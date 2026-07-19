@@ -51,10 +51,6 @@
         .institute-text { font-size: 14px; color: #E5E7EB; margin-bottom: 10px; font-weight: 500; }
         .copies-box { display: inline-block; margin-top: 10px; font-weight: bold; }
         .copies-box input { width: 50px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; margin-left: 5px; }
-
-        /* Copy Box Style */
-        .upi-copy-box { background: #F3F4F6; border: 1px dashed #4F46E5; padding: 8px; border-radius: 6px; margin: 10px auto; width: 85%; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; color: #1F2937; }
-        .copy-btn { background: #4F46E5; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -195,30 +191,18 @@
             <h2 style="color: var(--primary); margin-top:0;">Complete Payment</h2>
             <h1 style="font-size: 38px; margin: 5px 0 10px 0; color: var(--success);">₹<span id="modal-amount">0</span></h1>
             
-            <p style="font-size: 14px; color: #1F2937; font-weight: bold; margin-bottom: 8px;">1. सीधे अपने ऐप से पेमेंट करें:</p>
+            <p style="font-size: 15px; color: #1F2937; font-weight: bold; margin-bottom: 10px;">Scan QR or Pay Directly</p>
+            <img src="qr.jpg" alt="A To Z Solution QR Code" style="width: 180px; border-radius: 8px; margin-bottom: 10px; border: 3px solid #E5E7EB; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
             
-            <!-- 🔥 100% WORKING UNIVERSAL APP BUTTON 🔥 -->
-            <a id="btn-anyupi" href="#" class="btn-pay" style="background: #8B5CF6; width: 85%; margin: 5px auto 10px auto; padding: 12px; font-size: 16px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <i class="fa-solid fa-mobile-screen-button" style="font-size: 20px;"></i> Pay via App (GPay/PhonePe)
+            <!-- 🔥 THE JUGAAD: Direct UPI Link (a tag) with %20 encoded space 🔥 -->
+            <a id="upi-intent-btn" href="#" class="btn-pay" style="background: #8B5CF6; width: 85%; margin: 5px auto 15px auto; display: block; font-size: 18px; text-decoration: none; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('Payment hone ke baad wapas isi page par aakar 12-digit UTR jarur dalein!');">
+                <i class="fa-solid fa-mobile-screen"></i> Pay via App
             </a>
-
-            <!-- 🔥 THE JUGAAD: UPI ID COPY BOX (Agar kisi phone me app na khule) 🔥 -->
-            <div class="upi-copy-box">
-                <span>ID: <b id="upi-text">9709506515@okbizaxis</b></span>
-                <button class="copy-btn" onclick="copyUPI()"><i class="fa-regular fa-copy"></i> Copy ID</button>
-            </div>
-
-            <p style="font-size: 13px; color: #6B7280; margin: 10px 0 5px 0;">या दुकान का QR स्कैन करें:</p>
-            <img src="qr.jpg" alt="A To Z Solution QR Code" style="width: 150px; border-radius: 8px; margin-bottom: 10px; border: 2px solid #E5E7EB;">
             
-            <div style="background: #FEF2F2; padding: 8px; border-radius: 6px; border: 1px dashed var(--danger); width: 85%; margin: auto; margin-bottom: 10px;">
-                <p style="font-size: 12px; color: var(--danger); margin:0; font-weight: bold;">
-                    ⚠️ पेमेंट के बाद वापस इसी पेज पर आकर 12-Digit UTR ज़रूर डालें:
-                </p>
-            </div>
+            <p style="font-size: 12px; color: var(--danger); margin:0; font-weight: bold;">Enter 12-Digit UTR / Ref No. after payment:</p>
             
-            <!-- AUTOCOMPLETE="OFF" LAGA HUA HAI -->
-            <input type="text" id="utr-input" name="secure_utr_input" autocomplete="off" placeholder="Enter 12-digit UTR here" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 12px; margin: 0 0 15px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold; font-size: 16px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
+            <!-- 🔥 AUTOCOMPLETE="OFF" LAGA HUA HAI 🔥 -->
+            <input type="text" id="utr-input" name="secure_utr_input" autocomplete="off" placeholder="Enter 12-digit UTR here" maxlength="12" pattern="\d{12}" style="width: 80%; padding: 12px; margin: 8px 0 15px 0; border: 2px solid #D1D5DB; border-radius: 6px; text-align: center; font-weight: bold; font-size: 16px;" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);" />
             
             <div style="display: flex; gap: 10px; justify-content: center; width: 85%; margin: auto;">
                 <button class="btn-pay" onclick="processPayment()" id="btn-submit" style="flex: 1; margin-top: 0; background: var(--success);">Verify & Print</button>
@@ -363,27 +347,16 @@
             document.getElementById('photo-total').innerText = rate * copies;
         }
 
-        // 🔥 COPY UPI ID FUNCTION 🔥
-        function copyUPI() {
-            const upiText = document.getElementById("upi-text").innerText;
-            navigator.clipboard.writeText(upiText).then(() => {
-                alert("✅ UPI ID Copied! Ab GPay/PhonePe me paste karke pay karein aur UTR dalein.");
-            }).catch(() => {
-                alert("UPI ID: 9709506515@okbizaxis");
-            });
-        }
-
-        // 🔥 100% WORKING OPEN PAYMENT FUNCTION 🔥
+        // 🔥 OPEN PAYMENT FUNCTION JISME UPI LINK AUTOMATIC BANEGA 🔥
         function openPayment(service, amount, copies, fileObj, typeCode) {
             currentService = service; currentAmount = amount; currentCopies = copies; activeFileType = typeCode; 
             document.getElementById('modal-amount').innerText = amount;
             
-            // Universal UPI Intent Link
+            // App payment ke liye dynamically link banana (%20 encoded name ke sath)
             const upiId = "9709506515@okbizaxis"; 
-            const shopName = encodeURIComponent("A TO Z SOLUTION");
-            const universalLink = `upi://pay?pa=${upiId}&pn=${shopName}&am=${amount}&cu=INR`;
-            
-            document.getElementById('btn-anyupi').href = universalLink;
+            const shopName = "A%20TO%20Z%20SOLUTION";
+            const upiLink = `upi://pay?pa=${upiId}&pn=${shopName}&am=${amount}&cu=INR`;
+            document.getElementById('upi-intent-btn').href = upiLink;
 
             document.getElementById('modal-content-default').style.display = 'block';
             document.getElementById('modal-content-pending').style.display = 'none';
